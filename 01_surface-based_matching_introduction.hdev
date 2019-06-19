@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.1" halcon_version="12.0">
+<procedure name="main">
+<interface/>
+<body>
+<l>dev_close_window ()</l>
+<l>dev_open_window_fit_size (0, 0, 800, 600, -1, -1, WindowHandle)</l>
+<c>*</c>
+<l>read_object_model_3d ('F:/Research/Project/散乱多目标/halcon_code/vid069_surface-based_matching_introduction_example_program/25107.ply', 'mm', [], [], DB9PLY, Status)</l>
+<l>create_surface_model (DB9PLY, 0.02, [], [], SurfaceModelID)</l>
+<l>* get_surface_model_param (SurfaceModelID, 'sampled_model', SampledModel)</l>
+<c>*</c>
+<l>list_image_files ('scene_db9', 'ply', [], ScenePLYFiles)</l>
+<l>* create_pose (0, 0, 1.2, 0, 0, 270, 'Rp+T', 'gba', 'point', Pose3DVisualization)</l>
+<c>*</c>
+<l>for Index := 0 to |ScenePLYFiles|-1 by 1</l>
+<l>    read_object_model_3d (ScenePLYFiles[Index], 'mm', [], [], ScenePLY, Status)</l>
+<l>    select_points_object_model_3d (ScenePLY, 'point_coord_z', 0.002, 1, ScenePLYThresholded)</l>
+<l>    find_surface_model (SurfaceModelID, ScenePLYThresholded, 0.02, 0.3, 0, 'true', ['scene_normal_computation'], ['mls'], Pose, Score, SurfaceMatchingResultID)</l>
+<l>    rigid_trans_object_model_3d (DB9PLY, Pose, DB9PLYRigidTrans)</l>
+<l>    visualize_object_model_3d (WindowHandle, [ScenePLY, DB9PLYRigidTrans], [], [], ['colored', 'lut', 'alpha'], [12, 'rainbow', 0.8], [], [], [], Pose3DVisualization)</l>
+<l>*     debug_find_surface_model (SurfaceModelID, PipeJointOM3D, SceneOM3D, SurfaceMatchingResultID, CreateSurfaceModelParamName, CreateSurfaceModelParamValue, FindSurfaceModelParamName, FindSurfaceModelParamValue)</l>
+<l>endfor</l>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="Go2GenTL_ParseData">
+<interface>
+<io>
+<par name="Image" base_type="iconic" dimension="0"/>
+</io>
+<oo>
+<par name="HeightMap" base_type="iconic" dimension="0"/>
+<par name="Intensity" base_type="iconic" dimension="0"/>
+</oo>
+<oc>
+<par name="FrameCount" base_type="ctrl" dimension="0"/>
+<par name="Timestamp" base_type="ctrl" dimension="0"/>
+<par name="EncoderPosition" base_type="ctrl" dimension="0"/>
+<par name="EncoderIndex" base_type="ctrl" dimension="0"/>
+<par name="Inputs" base_type="ctrl" dimension="0"/>
+<par name="xOffset" base_type="ctrl" dimension="0"/>
+<par name="xResolution" base_type="ctrl" dimension="0"/>
+<par name="yOffset" base_type="ctrl" dimension="0"/>
+<par name="yResolution" base_type="ctrl" dimension="0"/>
+<par name="zOffset" base_type="ctrl" dimension="0"/>
+<par name="zResolution" base_type="ctrl" dimension="0"/>
+<par name="Width" base_type="ctrl" dimension="0"/>
+<par name="Length" base_type="ctrl" dimension="0"/>
+<par name="HasIntensity" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>count_channels (Image, channelCount)</l>
+<c></c>
+<l>if (channelCount == 1)</l>
+<c></c>
+<l>    get_image_size (Image, monoImageWidth, monoImageHeight)</l>
+<l>    crop_rectangle1 (Image, Stamps, monoImageHeight - 1, 0, monoImageHeight - 1, monoImageWidth)</l>
+<c></c>
+<l>    Go2GenTL_Stamp (Stamps, 1, FrameCount)</l>
+<l>    Go2GenTL_Stamp (Stamps, 2, Timestamp)</l>
+<l>    Go2GenTL_Stamp (Stamps, 3, EncoderPosition)</l>
+<l>    Go2GenTL_Stamp (Stamps, 4, EncoderIndex)</l>
+<l>    Go2GenTL_Stamp (Stamps, 5, Inputs)</l>
+<l>    Go2GenTL_Stamp (Stamps, 6, xOffset)</l>
+<l>    Go2GenTL_Stamp (Stamps, 7, xResolution)</l>
+<l>    Go2GenTL_Stamp (Stamps, 8, yOffset)</l>
+<l>    Go2GenTL_Stamp (Stamps, 9, yResolution)</l>
+<l>    Go2GenTL_Stamp (Stamps, 10, zOffset)</l>
+<l>    Go2GenTL_Stamp (Stamps, 11, zResolution)</l>
+<l>    Go2GenTL_Stamp (Stamps, 12, Width)</l>
+<l>    Go2GenTL_Stamp (Stamps, 13, Length)</l>
+<l>    Go2GenTL_Stamp (Stamps, 14, HasIntensity)</l>
+<c></c>
+<l>    crop_rectangle1 (Image, HeightMap, 0, 0, Length - 1, Width)</l>
+<l>    if (HasIntensity == 1)</l>
+<l>        IntensityPosition := (monoImageHeight - 1) / 2</l>
+<l>        crop_rectangle1 (Image, Intensity, IntensityPosition, 0, IntensityPosition + Length - 1, Width)</l>
+<l>    else</l>
+<l>        gen_image_const (Intensity, 'byte', Width, Length)</l>
+<l>    endif</l>
+<c></c>
+<l>elseif (channelCount == 3)</l>
+<c></c>
+<l>    decompose3 (Image, HeightMap, Intensity, Stamps)</l>
+<c></c>
+<l>    Go2GenTL_Stamp (Stamps, 1, FrameCount)</l>
+<l>    Go2GenTL_Stamp (Stamps, 2, Timestamp)</l>
+<l>    Go2GenTL_Stamp (Stamps, 3, EncoderPosition)</l>
+<l>    Go2GenTL_Stamp (Stamps, 4, EncoderIndex)</l>
+<l>    Go2GenTL_Stamp (Stamps, 5, Inputs)</l>
+<l>    Go2GenTL_Stamp (Stamps, 6, xOffset)</l>
+<l>    Go2GenTL_Stamp (Stamps, 7, xResolution)</l>
+<l>    Go2GenTL_Stamp (Stamps, 8, yOffset)</l>
+<l>    Go2GenTL_Stamp (Stamps, 9, yResolution)</l>
+<l>    Go2GenTL_Stamp (Stamps, 10, zOffset)</l>
+<l>    Go2GenTL_Stamp (Stamps, 11, zResolution)</l>
+<l>    Go2GenTL_Stamp (Stamps, 12, Width)</l>
+<l>    Go2GenTL_Stamp (Stamps, 13, Length)</l>
+<l>    Go2GenTL_Stamp (Stamps, 14, HasIntensity)</l>
+<l>endif</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="Go2GenTL_ParseData">
+<parameters>
+<parameter id="EncoderIndex"/>
+<parameter id="EncoderPosition"/>
+<parameter id="FrameCount"/>
+<parameter id="HasIntensity"/>
+<parameter id="HeightMap"/>
+<parameter id="Image"/>
+<parameter id="Inputs"/>
+<parameter id="Intensity"/>
+<parameter id="Length"/>
+<parameter id="Timestamp"/>
+<parameter id="Width"/>
+<parameter id="xOffset"/>
+<parameter id="xResolution"/>
+<parameter id="yOffset"/>
+<parameter id="yResolution"/>
+<parameter id="zOffset"/>
+<parameter id="zResolution"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="Go2GenTL_Stamp">
+<interface>
+<io>
+<par name="Stamps" base_type="iconic" dimension="0"/>
+</io>
+<ic>
+<par name="Index" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="Value" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<c>* Check if we are on a 64-bit machine</c>
+<l>test_value := 0xFFFFFFFF</l>
+<l>if (test_value &gt; 0)</l>
+<l>    is64bit := 1</l>
+<l>else</l>
+<l>    is64bit := 0</l>
+<l>endif</l>
+<c></c>
+<l>get_grayval (Stamps, 0, Index * 4, tempvalue0)</l>
+<l>get_grayval (Stamps, 0, (Index * 4) + 1, tempvalue1)</l>
+<l>get_grayval (Stamps, 0, (Index * 4) + 2, tempvalue2)</l>
+<l>get_grayval (Stamps, 0, (Index * 4) + 3, tempvalue3)</l>
+<c></c>
+<c>* The actual stamp from the Gocator is 64-bit. tempvalue0 is the most significant 16-bit (i.e. the top bit is the sign bit)</c>
+<c>* The code below assumes we only need the bottom 32-bit information. User need to update this conversion function if they want to</c>
+<c>* return 64-bit value.</c>
+<c></c>
+<l>if (is64bit == 1)</l>
+<l>    tuple_lsh (tempvalue0, 48, tempvalue0)</l>
+<l>    tuple_lsh (tempvalue1, 32, tempvalue1)</l>
+<l>    tuple_lsh (tempvalue2, 16, tempvalue2)</l>
+<l>    tuple_lsh (tempvalue3, 0, tempvalue3)</l>
+<l>    Value := tempvalue0 + tempvalue1 + tempvalue2 + tempvalue3</l>
+<l>else</l>
+<l>    tuple_lsh (tempvalue2, 16, tempvalue2)</l>
+<l>    tuple_lsh (tempvalue3, 0, tempvalue3)</l>
+<l>    Value := tempvalue2 + tempvalue3</l>
+<l>endif</l>
+<l>return ()</l>
+</body>
+<docu id="Go2GenTL_Stamp">
+<parameters>
+<parameter id="Index"/>
+<parameter id="Stamps"/>
+<parameter id="Value"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="Go2GenTL_Transformation">
+<interface>
+<ic>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="XOffset" base_type="ctrl" dimension="0"/>
+<par name="ZOffset" base_type="ctrl" dimension="0"/>
+<par name="Angle" base_type="ctrl" dimension="0"/>
+<par name="Orientation" base_type="ctrl" dimension="0"/>
+<par name="StandOff" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>get_framegrabber_param (AcqHandle, 'TransformationXOffset', XOffset)</l>
+<l>get_framegrabber_param (AcqHandle, 'TransformationZOffset', ZOffset)</l>
+<l>get_framegrabber_param (AcqHandle, 'TransformationAngle', Angle)</l>
+<l>get_framegrabber_param (AcqHandle, 'TransformationOrientation', Orientation)</l>
+<l>get_framegrabber_param (AcqHandle, 'Standoff', StandOff)</l>
+<l>return ()</l>
+</body>
+<docu id="Go2GenTL_Transformation">
+<parameters>
+<parameter id="AcqHandle"/>
+<parameter id="Angle"/>
+<parameter id="Orientation"/>
+<parameter id="StandOff"/>
+<parameter id="XOffset"/>
+<parameter id="ZOffset"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="gocator_image_to_om3d">
+<interface>
+<io>
+<par name="Image" base_type="iconic" dimension="0"/>
+</io>
+<ic>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="ObjectModel3D" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<c>* Get image dimensions</c>
+<l>get_framegrabber_param (AcqHandle, 'image_width', Width)</l>
+<l>get_framegrabber_param (AcqHandle, 'image_height', Height)</l>
+<c>* Decompose the returned image into three separate images for</c>
+<c>* height map, intensity and stamps</c>
+<l>Go2GenTL_ParseData (Image, HeightMap, Intensity, frameCount, timestamp, encoderPosition, encoderIndex, inputs, xOffset, xResolution, yOffset, yResolution, zOffset, zResolution, width, height, HasIntensity)</l>
+<c>* Calculate the intensity image</c>
+<c>* If intensity is not enabled, this image is all 0</c>
+<l>* if (HasIntensity)</l>
+<c>    * Values in the intensity are scaled up by 256</c>
+<l>*     scale_image (Intensity, IntensityScaled, 1.0 / 256, 0)</l>
+<l>* endif</l>
+<c>* </c>
+<c>* HeightMap: The width and height of the image represent the</c>
+<c>* dimensions in the x and y-axis. Together with the pixel</c>
+<c>* value, each pixel presents a 3D point in the real-world</c>
+<c>* coordinates.</c>
+<c>* </c>
+<c>* Calculate the real-world coordinates (X, Y, Z) from pixel</c>
+<c>* coordinates (Px, Py, Pz):</c>
+<c>* </c>
+<c>* X = X-offset + Px * X-Resolution</c>
+<c>* Y = Y-offset + Py * Y-Resolution</c>
+<c>* Z = Z-offset + Pz * Z-Resolution</c>
+<c>* </c>
+<c>* returned resolution and offset in [nm]</c>
+<c>* </c>
+<c>* Create X image with correct scaling (in [m])</c>
+<l>gen_image_surface_first_order (X, 'real', 0, xResolution * 1e-9, xOffset * 1e-9, 0, 0, Width, Height)</l>
+<c>* Create Y image with correct scaling (in [m])</c>
+<l>gen_image_surface_first_order (Y, 'real', yResolution * 1e-9, 0, yOffset * 1e-9, 0, 0, Width, Height)</l>
+<c>* Create Z image with correct scaling (in [m]) and set HALCON camera 3D</c>
+<c>* coordinate system:</c>
+<c>*    Xhalcon = Xgocator</c>
+<c>*    Yhalcon = Ygocator</c>
+<c>*    Zhalcon = StandOff + zOffsetTransform - Zgocator</c>
+<c>*    where: StandOff = ClearanceDistance + (MeasurementRange/2)</c>
+<c>* </c>
+<c>* Reduce domain: 0 value means invalid data</c>
+<l>threshold (HeightMap, Region, 1, lsh(1,16) - 1)</l>
+<l>reduce_domain (HeightMap, Region, ImageReduced)</l>
+<l>convert_image_type (ImageReduced, Z, 'real')</l>
+<l>Go2GenTL_Transformation (AcqHandle, xOffsetTransform, zOffsetTransform, AngleTransform, OrientationTransform, StandOff)</l>
+<c>* Transformation values in [um]</c>
+<c>* The uint4 values have to be interpreted as int4</c>
+<l>if (zOffsetTransform &gt; lsh(1,31))</l>
+<l>    zOffsetTransform_signed := zOffsetTransform - lsh(1,32)</l>
+<l>else</l>
+<l>    zOffsetTransform_signed := zOffsetTransform</l>
+<l>endif</l>
+<l>scale_image (Z, Z, zResolution * -1e-9, (StandOff + zOffsetTransform_signed) * 1e-6 - zOffset * 1e-9)</l>
+<c>* </c>
+<c>* Generate an ObjectModel3D and visualize it, press button</c>
+<c>* to continue</c>
+<l>xyz_to_object_model_3d (X, Y, Z, ObjectModel3D)</l>
+<l>return ()</l>
+</body>
+<docu id="gocator_image_to_om3d">
+<parameters>
+<parameter id="AcqHandle"/>
+<parameter id="Image"/>
+<parameter id="ObjectModel3D"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="add_noise_object_model_3d">
+<interface>
+<ic>
+<par name="ObjectModel3D" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="ObjectModel3DOut" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>object_model_3d_to_xyz (X, Y, Z, ObjectModel3D, 'from_xyz_map', [], [])</l>
+<l>add_noise_white (Z, Z, 0.011)</l>
+<l>xyz_to_object_model_3d (X, Y, Z, ObjectModel3DOut)</l>
+<l>return ()</l>
+</body>
+<docu id="add_noise_object_model_3d">
+<parameters>
+<parameter id="ObjectModel3D">
+<default_type>integer</default_type>
+<mixed_type>false</mixed_type>
+<sem_type>object_model_3d</sem_type>
+<type_list>
+<item>integer</item>
+</type_list>
+</parameter>
+<parameter id="ObjectModel3DOut">
+<default_type>integer</default_type>
+<mixed_type>false</mixed_type>
+<sem_type>object_model_3d</sem_type>
+<type_list>
+<item>integer</item>
+</type_list>
+</parameter>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>

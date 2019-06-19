@@ -1,0 +1,5 @@
+*.xml
+*.ply
+*.txt
+scene_db9/
+scene_pipe_joint/
