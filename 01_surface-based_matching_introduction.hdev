@@ -5,9 +5,19 @@
 <body>
 <l>dev_close_window ()</l>
 <l>dev_open_window_fit_size (0, 0, 800, 600, -1, -1, WindowHandle)</l>
-<c>*</c>
+<l>*open_textwindow (0, 0, 800, 256, 2, 'white', 'black', 0, 'visible', '', WindowHandle1)</l>
 <l>read_object_model_3d ('F:/Research/Project/散乱多目标/halcon_code/vid069_surface-based_matching_introduction_example_program/25107.ply', 'mm', [], [], DB9PLY, Status)</l>
-<l>create_surface_model (DB9PLY, 0.02, [], [], SurfaceModelID)</l>
+<l>*count_seconds(s1)</l>
+<l>*create_surface_model (DB9PLY, 0.01, [], [], SurfaceModelID)</l>
+<l>*count_seconds(s2)</l>
+<l>*Time := s2-s1</l>
+<l>*write_string(WindowHandle1,'训练时间是：'+Time+'s')</l>
+<l>*write_surface_model(SurfaceModelID, 'model')</l>
+<l>*count_seconds(s1)</l>
+<l>read_surface_model ('model', SurfaceModelID1)</l>
+<l>*count_seconds(s2)</l>
+<l>*Time := s2-s1</l>
+<l>*write_string(WindowHandle1,'读取时间是：'+Time+'s')</l>
 <l>* get_surface_model_param (SurfaceModelID, 'sampled_model', SampledModel)</l>
 <c>*</c>
 <l>list_image_files ('scene_db9', 'ply', [], ScenePLYFiles)</l>
@@ -16,8 +26,13 @@
 <l>for Index := 0 to |ScenePLYFiles|-1 by 1</l>
 <l>    read_object_model_3d (ScenePLYFiles[Index], 'mm', [], [], ScenePLY, Status)</l>
 <l>    select_points_object_model_3d (ScenePLY, 'point_coord_z', 0.002, 1, ScenePLYThresholded)</l>
-<l>    find_surface_model (SurfaceModelID, ScenePLYThresholded, 0.02, 0.3, 0, 'true', ['scene_normal_computation'], ['mls'], Pose, Score, SurfaceMatchingResultID)</l>
+<l>    *count_seconds(s3)</l>
+<l>    find_surface_model (SurfaceModelID1, ScenePLYThresholded, 0.015, 0.5, 0, 'true', ['scene_normal_computation'], ['mls'], Pose, Score, SurfaceMatchingResultID)</l>
+<l>    *count_seconds(s4)</l>
+<l>    *Time := s4-s3</l>
+<l>    *write_string(WindowHandle1,'匹配时间是：'+Time+'s')</l>
 <l>    rigid_trans_object_model_3d (DB9PLY, Pose, DB9PLYRigidTrans)</l>
+<l>    pose_to_quat (Pose, Quaternion)</l>
 <l>    visualize_object_model_3d (WindowHandle, [ScenePLY, DB9PLYRigidTrans], [], [], ['colored', 'lut', 'alpha'], [12, 'rainbow', 0.8], [], [], [], Pose3DVisualization)</l>
 <l>*     debug_find_surface_model (SurfaceModelID, PipeJointOM3D, SceneOM3D, SurfaceMatchingResultID, CreateSurfaceModelParamName, CreateSurfaceModelParamValue, FindSurfaceModelParamName, FindSurfaceModelParamValue)</l>
 <l>endfor</l>
